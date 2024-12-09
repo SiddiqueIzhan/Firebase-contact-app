@@ -13,15 +13,17 @@ const Modal = ({ handleClose, showModal, children }) => {
     <>
       {showModal && (
         <>
-          <div className="w-[348px] bg-[#FDFDFD] rounded-lg z-50 p-4 m-auto absolute left-4">
-            <IoCloseSharp
-              className="absolute right-4 top-4 text-xl"
-              onClick={handleClose}
-            />
-            {children}
+          <div className="w-screen h-[100] flex justify-center items-start absolute top-1/4 z-30">
+            <div className="w-[348px] bg-[#FDFDFD] rounded-lg z-50 p-4 m-auto relative">
+              <IoCloseSharp
+                className="absolute right-4 top-4 text-xl"
+                onClick={handleClose}
+              />
+              {children}
+            </div>
           </div>
           <div
-            className="w-screen h-screen backdrop-blur absolute top-0 z-40 "
+            className="w-screen h-full backdrop-blur absolute top-0 z-20 "
             onClick={handleClose}
           />
         </>

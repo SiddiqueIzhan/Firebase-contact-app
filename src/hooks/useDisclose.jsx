@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 
 const useDisclose = () => {
-  const [showModal, setshowModal] = useState(true);
+  const [showModal, setshowModal] = useState(false);
 
   const handleShowModal = () => {
     setshowModal(true);
-    console.log(showModal);
   };
 
   const handleClose = () => {

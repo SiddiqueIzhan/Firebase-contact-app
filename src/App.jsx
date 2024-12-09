@@ -2,39 +2,54 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./components/navbar";
 import SearchBar from "./components/search";
 import ContactBar from "./components/contactBar";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "./firebase";
-import Modal from "./components/modal";
 import AddAndUpdate from "./components/AddAndUpdate";
 import useDisclose from "./hooks/useDisclose";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import NoContactFound from "./components/NoContactFound";
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
+  const { showModal, handleShowModal, handleClose } = useDisclose();
+
+  const filterContacts = (e) => {
+    const value = e.target.value;
+    const contactsRef = collection(db, "contacts");
+
+    onSnapshot(contactsRef, (snapshot) => {
+      const resData = snapshot.docs.map((doc) => {
+        return {
+          ...doc.data(),
+          id: doc.id,
+        };
+      });
+
+      const filteredContents = resData.filter((contact) =>
+        contact.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setContacts(filteredContents);
+      return filteredContents;
+    });
+  };
+
   useEffect(() => {
     const getContacts = async () => {
       try {
         const contactsRef = collection(db, "contacts");
-        const data = await getDocs(contactsRef);
 
-        if (data.empty) {
-          console.log("No contacts found!");
-        } else {
-          const resData = data.docs.map((doc) => ({
+        onSnapshot(contactsRef, (snapshot) => {
+          const resData = snapshot.docs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
           }));
-          console.log("Fetched Contacts: ", resData);
           setContacts(resData);
-          const q = query(
-            contactsRef,
-            where("email", "==", "example@example.com")
-          );
-          const querySnapshot = await getDocs(q);
-
-          querySnapshot.forEach((doc) => {
-            console.log(doc.id, " => ", doc.data());
-          });
-        }
+          return resData;
+        });
       } catch (error) {
         console.error("Error fetching contacts: ", error);
       }
@@ -43,22 +58,32 @@ export default function App() {
   }, []);
 
   return (
-    <div className="max-w-[370px] my-2 mx-auto relative">
-      <Navbar />
-      <SearchBar
-      // handleShowModal={handleShowModal}
-      />
-      <div className="w-full mt-[18px] flex flex-col gap-[11px]">
-        {contacts.map((contact) => (
-          <>
-            <ContactBar
-              id={contact.id}
-              name={contact.name}
-              email={contact.email}
-            />
-          </>
-        ))}
+    <>
+      <div className="max-w-[370px] mx-4 my-2  relative min-h-screen">
+        <ToastContainer />
+        <Navbar />
+        <SearchBar
+          handleShowModal={handleShowModal}
+          filterContacts={filterContacts}
+        />
+        <div className="w-full mt-[18px] flex flex-col gap-[11px]">
+          {contacts.length ? (
+            contacts.map((contact) => (
+              <>
+                <ContactBar
+                  key={contact.id}
+                  id={contact.id}
+                  name={contact.name}
+                  email={contact.email}
+                />
+              </>
+            ))
+          ) : (
+            <NoContactFound />
+          )}
+        </div>
       </div>
-    </div>
+      <AddAndUpdate isUpdate={false} isOpen={showModal} onClose={handleClose} />
+    </>
   );
 }

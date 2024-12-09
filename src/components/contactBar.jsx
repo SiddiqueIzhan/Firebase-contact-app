@@ -5,14 +5,17 @@ import { MdDelete } from "react-icons/md";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import AddAndUpdate from "./AddAndUpdate";
+import useDisclose from "../hooks/useDisclose";
+import { toast } from "react-toastify";
 
 const ContactBar = ({ id, email, name }) => {
   const { showModal, handleShowModal, handleClose } = useDisclose();
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, "contacts", id));
+      toast.success("Contact Deleted");
     } catch (error) {
-      console.error(error);
+      toast.error(error);
     }
   };
   return (
@@ -27,20 +30,22 @@ const ContactBar = ({ id, email, name }) => {
         </div>
         <div className="flex gap-2 text-3xl">
           <TbEditCircle
-            className="hover:text-green-500"
-            onClick={() => updateContact()}
+            className="hover:text-green-500 cursor-pointer"
+            onClick={handleShowModal}
           />
           <MdDelete
-            className="text-[#5F00D9] hover:text-red-500"
+            className="text-[#5F00D9] hover:text-red-500 cursor-pointer"
             onClick={() => handleDelete(id)}
           />
         </div>
       </div>
       <AddAndUpdate
         isUpdate={true}
-        id={contact.id}
-        name={contact.name}
-        email={contact.email}
+        id={id}
+        name={name}
+        email={email}
+        isOpen={showModal}
+        onClose={handleClose}
       />
     </>
   );
